@@ -1,0 +1,27 @@
+{
+  "name": "@repo/db",
+  "module": "index.ts",
+  "main": "./dist/index.js",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "@repo/typescript-config": "workspace:*",
+    "dotenv": "^16.6.1",
+    "typescript": "5.9.2",
+    "@prisma/adapter-pg": "^7.5.0",
+    "@prisma/client": "^7.5.0",
+    "pg": "^8.20.0",
+    "prisma": "^7.5.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}

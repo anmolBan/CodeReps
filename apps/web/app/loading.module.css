@@ -1,0 +1,272 @@
+.page {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 100svh;
+  padding: 32px;
+  overflow: hidden;
+}
+
+.glow {
+  position: absolute;
+  inset: auto;
+  width: 620px;
+  height: 620px;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at center, rgba(255, 184, 108, 0.22), transparent 42%),
+    radial-gradient(circle at 35% 65%, rgba(70, 182, 164, 0.14), transparent 48%);
+  filter: blur(18px);
+  animation: pulseGlow 4.2s ease-in-out infinite;
+}
+
+.panel {
+  position: relative;
+  z-index: 1;
+  width: min(720px, 100%);
+  display: grid;
+  gap: 28px;
+  padding: 38px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 34px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03)),
+    rgba(15, 14, 24, 0.74);
+  box-shadow:
+    0 30px 80px rgba(5, 5, 12, 0.36),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(22px);
+}
+
+.rings {
+  position: relative;
+  width: 170px;
+  height: 170px;
+  margin: 0 auto;
+}
+
+.ringOuter,
+.ringMid,
+.ringCore,
+.orbA,
+.orbB {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+}
+
+.ringOuter {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: spin 8s linear infinite;
+}
+
+.ringMid {
+  inset: 18px;
+  border: 1px solid rgba(241, 182, 106, 0.42);
+  animation: spinReverse 5s linear infinite;
+}
+
+.ringCore {
+  inset: 46px;
+  background:
+    radial-gradient(circle at 35% 30%, #f7d8a6 0%, #f3c98b 28%, #ff8a5c 68%, #241625 100%);
+  box-shadow:
+    0 0 32px rgba(255, 138, 92, 0.34),
+    inset 0 1px 12px rgba(255, 255, 255, 0.18);
+}
+
+.orbA,
+.orbB {
+  animation: spin 3.6s linear infinite;
+}
+
+.orbA::after,
+.orbB::after {
+  position: absolute;
+  content: "";
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+}
+
+.orbA::after {
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #46b6a4;
+  box-shadow: 0 0 22px rgba(70, 182, 164, 0.8);
+}
+
+.orbB {
+  animation-direction: reverse;
+  animation-duration: 5.2s;
+}
+
+.orbB::after {
+  right: 24px;
+  bottom: 18px;
+  background: #f3c98b;
+  box-shadow: 0 0 22px rgba(243, 201, 139, 0.8);
+}
+
+.copy {
+  display: grid;
+  gap: 14px;
+  text-align: center;
+}
+
+.badge {
+  color: #f1b66a;
+  font-size: 0.84rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.copy h1 {
+  font-size: clamp(2.4rem, 7vw, 4.6rem);
+  line-height: 0.96;
+  letter-spacing: -0.06em;
+  font-weight: 650;
+}
+
+.description {
+  max-width: 46ch;
+  margin: 0 auto;
+  color: rgba(247, 243, 234, 0.74);
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.terminal {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  background: rgba(10, 10, 18, 0.5);
+  overflow: hidden;
+}
+
+.terminalTop {
+  display: flex;
+  gap: 8px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.terminalTop span {
+  width: 11px;
+  height: 11px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.terminalTop span:first-child {
+  background: #ff8a5c;
+}
+
+.terminalTop span:nth-child(2) {
+  background: #f1b66a;
+}
+
+.terminalTop span:nth-child(3) {
+  background: #46b6a4;
+}
+
+.terminalBody {
+  display: grid;
+  gap: 10px;
+  padding: 18px 18px 20px;
+}
+
+.terminalLine {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(247, 243, 234, 0.82);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.95rem;
+  opacity: 0;
+  animation: lineReveal 1.8s ease forwards infinite;
+}
+
+.terminalLine:nth-child(2) {
+  animation-delay: 0.25s;
+}
+
+.terminalLine:nth-child(3) {
+  animation-delay: 0.5s;
+}
+
+.prompt {
+  color: #46b6a4;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spinReverse {
+  from {
+    transform: rotate(360deg);
+  }
+
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes pulseGlow {
+  0%,
+  100% {
+    transform: scale(0.96);
+    opacity: 0.82;
+  }
+
+  50% {
+    transform: scale(1.04);
+    opacity: 1;
+  }
+}
+
+@keyframes lineReveal {
+  0%,
+  20% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  35%,
+  70% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: 18px;
+  }
+
+  .panel {
+    padding: 26px 20px;
+    border-radius: 28px;
+  }
+
+  .rings {
+    width: 144px;
+    height: 144px;
+  }
+
+  .ringCore {
+    inset: 38px;
+  }
+}
