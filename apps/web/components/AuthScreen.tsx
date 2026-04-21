@@ -231,9 +231,10 @@ export default function AuthScreen({ signin }: AuthScreenProps) {
       setIsSubmitting(true);
 
       try {
-        const result = await axios.post("/api/auth/signin", {
+        const result = await signIn("credentials", {
+          redirect: false,
           email: form.email,
-          password: form.password
+          password: form.password,
         });
 
         if (!result) {
@@ -241,7 +242,7 @@ export default function AuthScreen({ signin }: AuthScreenProps) {
           return;
         }
 
-        if (result.data?.error) {
+        if (result.error) {
           setFormError("Invalid email or password.");
           return;
         }

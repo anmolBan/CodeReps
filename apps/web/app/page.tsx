@@ -57,7 +57,7 @@ const timeline = [
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
-  console.log(session, "Anmol Bansal");
+  console.log(session);
   return (
     <main className={styles.page}>
       <section className={styles.hero}>
