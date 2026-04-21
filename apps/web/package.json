@@ -11,7 +11,14 @@
     "check-types": "next typegen && tsc --noEmit"
   },
   "dependencies": {
+    "@repo/db": "*",
     "@repo/ui": "*",
+    "@repo/zod-types": "*",
+    "@types/bcrypt": "^6.0.0",
+    "@types/jsonwebtoken": "^9.0.10",
+    "axios": "^1.15.1",
+    "bcrypt": "^6.0.0",
+    "jsonwebtoken": "^9.0.3",
     "next": "16.2.0",
     "next-auth": "^4.24.14",
     "react": "^19.2.0",
@@ -25,7 +32,6 @@
     "@types/react-dom": "19.2.2",
     "eslint": "^9.39.1",
     "typescript": "5.9.2",
-    "@types/bun": "latest",
-    "@repo/db": "*"
+    "@types/bun": "latest"
   }
 }

@@ -1,12 +1,10 @@
 {
   "name": "@repo/db",
-  "module": "index.ts",
-  "main": "./dist/index.js",
   "types": "./src/index.ts",
   "exports": {
     ".": {
       "types": "./src/index.ts",
-      "default": "./dist/index.js"
+      "default": "./src/index.ts"
     }
   },
   "type": "module",

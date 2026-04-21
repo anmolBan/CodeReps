@@ -2,13 +2,13 @@
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
+import { PrismaClient } from "@prisma/client";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from './generated/prisma/client.js';
 
 // 1. Create a function to instantiate the client
 const prismaClientSingleton = () => {

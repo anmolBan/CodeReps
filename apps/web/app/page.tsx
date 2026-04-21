@@ -1,4 +1,7 @@
+import { get } from "http";
 import styles from "./page.module.css";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../lib/authOptions";
 
 const proofPoints = [
   "Daily challenges",
@@ -52,7 +55,9 @@ const timeline = [
   },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const session = await getServerSession(authOptions);
+  console.log(session, "Anmol Bansal");
   return (
     <main className={styles.page}>
       <section className={styles.hero}>

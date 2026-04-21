@@ -1,19 +1,139 @@
 "use client";
 
-import type { FormEvent } from "react";
+import { useState, type ChangeEvent, type FormEvent } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
+import axios from "axios";
+import { userSignInSchema, userSignUpSchema } from "@repo/zod-types";
 import styles from "../app/(auth)/auth.module.css";
 
 type AuthScreenProps = {
   signin: boolean;
 };
 
-type FormField = {
-  id: string;
+type FormValues = {
+  name: string;
+  email: string;
+  password: string;
+};
+
+type FieldName = keyof FormValues;
+type FieldErrors = Partial<Record<FieldName, string>>;
+
+type Field = {
+  id: FieldName;
   label: string;
   type: string;
   placeholder: string;
   autoComplete?: string;
+};
+
+type ScreenContent = {
+  badge: string;
+  title: string;
+  description: string;
+  primaryAction: string;
+  alternatePrompt: string;
+  alternateLabel: string;
+  alternateHref: string;
+  footerHint: string;
+  sideHeading: string;
+  sideDescription: string;
+  statLabel: string;
+  statValue: string;
+  fields: Field[];
+  highlights: string[];
+};
+
+const INITIAL_FORM: FormValues = {
+  name: "",
+  email: "",
+  password: "",
+};
+
+const CONTENT: Record<"signin" | "signup", ScreenContent> = {
+  signin: {
+    badge: "Welcome back",
+    title: "Pick up your streak where you left it.",
+    description:
+      "Sign in to jump back into daily problems, contests, saved progress, and your latest rating climb.",
+    primaryAction: "Sign in to CodeReps",
+    alternatePrompt: "New here?",
+    alternateLabel: "Create an account",
+    alternateHref: "/signup",
+    footerHint: "Keep me signed in on this device",
+    sideHeading: "Get back into the rhythm of solving.",
+    sideDescription:
+      "One login away from your active streak, your next challenge, and a dashboard built to keep your momentum real.",
+    statLabel: "Current streak",
+    statValue: "18 days",
+    fields: [
+      {
+        id: "email",
+        label: "Email",
+        type: "email",
+        placeholder: "you@example.com",
+        autoComplete: "email",
+      },
+      {
+        id: "password",
+        label: "Password",
+        type: "password",
+        placeholder: "Enter your password",
+        autoComplete: "current-password",
+      },
+    ],
+    highlights: [
+      "Jump straight into your recommended problem set.",
+      "Revisit editorials, bookmarks, and past submissions.",
+      "Track rating changes across daily rounds and contests.",
+    ],
+  },
+  signup: {
+    badge: "Create your account",
+    title: "Start building coding confidence that compounds.",
+    description:
+      "Join CodeReps to solve curated challenges, enter contests, and turn steady practice into real competitive progress.",
+    primaryAction: "Create your CodeReps account",
+    alternatePrompt: "Already have an account?",
+    alternateLabel: "Sign in",
+    alternateHref: "/signin",
+    footerHint: "Send me product updates and contest reminders",
+    sideHeading: "Train with purpose from your very first solve.",
+    sideDescription:
+      "CodeReps gives ambitious programmers a sharper place to practice: focused sets, ranking energy, and the kind of feedback loop that keeps you improving.",
+    statLabel: "Problems waiting",
+    statValue: "2.4k+",
+    fields: [
+      {
+        id: "name",
+        label: "Full name",
+        type: "text",
+        placeholder: "Your name",
+        autoComplete: "name",
+      },
+      {
+        id: "email",
+        label: "Email",
+        type: "email",
+        placeholder: "you@example.com",
+        autoComplete: "email",
+      },
+      {
+        id: "password",
+        label: "Password",
+        type: "password",
+        placeholder: "Create a password",
+        autoComplete: "new-password",
+      },
+    ],
+    highlights: [
+      "Choose guided tracks for interviews, speed, or contest prep.",
+      "Build streaks, unlock harder sets, and watch your rating move.",
+      "Learn from hints and editorials without losing your momentum.",
+    ],
+  },
 };
 
 function GitHubLogo() {
@@ -57,100 +177,144 @@ function GoogleLogo() {
 }
 
 export default function AuthScreen({ signin }: AuthScreenProps) {
-  const content = signin
-    ? {
-        badge: "Welcome back",
-        title: "Pick up your streak where you left it.",
-        description:
-          "Sign in to jump back into daily problems, contests, saved progress, and your latest rating climb.",
-        primaryAction: "Sign in to CodeReps",
-        alternatePrompt: "New here?",
-        alternateLabel: "Create an account",
-        alternateHref: "/signup",
-        footerHint: "Keep me signed in on this device",
-        sideHeading: "Get back into the rhythm of solving.",
-        sideDescription:
-          "One login away from your active streak, your next challenge, and a dashboard built to keep your momentum real.",
-        statLabel: "Current streak",
-        statValue: "18 days",
-        fields: [
-          {
-            id: "email",
-            label: "Email",
-            type: "email",
-            placeholder: "you@example.com",
-            autoComplete: "email",
-          },
-          {
-            id: "password",
-            label: "Password",
-            type: "password",
-            placeholder: "Enter your password",
-            autoComplete: "current-password",
-          },
-        ] satisfies FormField[],
-        highlights: [
-          "Jump straight into your recommended problem set.",
-          "Revisit editorials, bookmarks, and past submissions.",
-          "Track rating changes across daily rounds and contests.",
-        ],
-      }
-    : {
-        badge: "Create your account",
-        title: "Start building coding confidence that compounds.",
-        description:
-          "Join CodeReps to solve curated challenges, enter contests, and turn steady practice into real competitive progress.",
-        primaryAction: "Create your CodeReps account",
-        alternatePrompt: "Already have an account?",
-        alternateLabel: "Sign in",
-        alternateHref: "/signin",
-        footerHint: "Send me product updates and contest reminders",
-        sideHeading: "Train with purpose from your very first solve.",
-        sideDescription:
-          "CodeReps gives ambitious programmers a sharper place to practice: focused sets, ranking energy, and the kind of feedback loop that keeps you improving.",
-        statLabel: "Problems waiting",
-        statValue: "2.4k+",
-        fields: [
-          {
-            id: "name",
-            label: "Full name",
-            type: "text",
-            placeholder: "Your name",
-            autoComplete: "name",
-          },
-          {
-            id: "email",
-            label: "Email",
-            type: "email",
-            placeholder: "you@example.com",
-            autoComplete: "email",
-          },
-          {
-            id: "password",
-            label: "Password",
-            type: "password",
-            placeholder: "Create a password",
-            autoComplete: "new-password",
-          },
-        ] satisfies FormField[],
-        highlights: [
-          "Choose guided tracks for interviews, speed, or contest prep.",
-          "Build streaks, unlock harder sets, and watch your rating move.",
-          "Learn from hints and editorials without losing your momentum.",
-        ],
-      };
+  const router = useRouter();
+  const mode = signin ? "signin" : "signup";
+  const content = CONTENT[mode];
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  const [form, setForm] = useState(INITIAL_FORM);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [formError, setFormError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  function clearMessages(field?: FieldName) {
+    if (field) {
+      setFieldErrors((current) => ({ ...current, [field]: "" }));
+    }
+    if (formError) {
+      setFormError("");
+    }
+    if (successMessage) {
+      setSuccessMessage("");
+    }
+  }
+
+  function handleChange(event: ChangeEvent<HTMLInputElement>) {
+    const field = event.target.name as FieldName;
+    const value = event.target.value;
+
+    setForm((current) => ({ ...current, [field]: value }));
+    clearMessages(field);
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    console.log(`${signin ? "signin" : "signup"} form submitted`);
+    setFieldErrors({});
+    setFormError("");
+    setSuccessMessage("");
+
+    if (signin) {
+      const parsed = userSignInSchema.safeParse({
+        email: form.email,
+        password: form.password,
+      });
+
+      if (!parsed.success) {
+        const errors = parsed.error.flatten().fieldErrors;
+        setFieldErrors({
+          email: errors.email?.[0],
+          password: errors.password?.[0],
+        });
+        return;
+      }
+
+      setIsSubmitting(true);
+
+      try {
+        const result = await axios.post("/api/auth/signin", {
+          email: form.email,
+          password: form.password
+        });
+
+        if (!result) {
+          setFormError("Unable to sign in right now. Please try again.");
+          return;
+        }
+
+        if (result.data?.error) {
+          setFormError("Invalid email or password.");
+          return;
+        }
+
+        // router.push(result.url || "/");
+        console.log(result);
+        router.refresh();
+      } catch {
+        setFormError("Network error. Please check your connection and try again.");
+      } finally {
+        setIsSubmitting(false);
+      }
+
+      return;
+    }
+
+    const parsed = userSignUpSchema.safeParse(form);
+
+    if (!parsed.success) {
+      const errors = parsed.error.flatten().fieldErrors;
+      setFieldErrors({
+        name: errors.name?.[0],
+        email: errors.email?.[0],
+        password: errors.password?.[0],
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await axios.post("/api/signup", parsed.data);
+      setForm(INITIAL_FORM);
+      setSuccessMessage(
+        response.data.message ||
+          "Account created successfully. Redirecting to sign in...",
+      );
+
+      window.setTimeout(() => {
+        router.push("/signin");
+      }, 1200);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const data = error.response?.data as
+          | { error?: string; fieldErrors?: FieldErrors }
+          | undefined;
+
+        if (data?.fieldErrors) {
+          setFieldErrors(data.fieldErrors);
+        }
+
+        const hasInlineErrors =
+          Boolean(data?.fieldErrors?.name) ||
+          Boolean(data?.fieldErrors?.email) ||
+          Boolean(data?.fieldErrors?.password);
+
+        if (!hasInlineErrors) {
+          setFormError(
+            data?.error || "Network error. Please check your connection and try again.",
+          );
+        }
+      } else {
+        setFormError("Network error. Please check your connection and try again.");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
-  function handleGitHubClick() {
-    console.log(`${signin ? "signin" : "signup"} GitHub auth clicked`);
-  }
+  function handleGitHubClick() {}
 
   function handleGoogleClick() {
-    console.log(`${signin ? "signin" : "signup"} Google auth clicked`);
+    console.log(`${mode} Google auth clicked`);
   }
 
   return (
@@ -194,6 +358,18 @@ export default function AuthScreen({ signin }: AuthScreenProps) {
           </div>
 
           <form className={styles.form} onSubmit={handleSubmit}>
+            {formError ? (
+              <div className={styles.errorAlert} role="alert">
+                {formError}
+              </div>
+            ) : null}
+
+            {successMessage ? (
+              <div className={styles.successAlert} role="status">
+                {successMessage}
+              </div>
+            ) : null}
+
             {content.fields.map((field) => (
               <label key={field.id} className={styles.field}>
                 <span>{field.label}</span>
@@ -203,7 +379,14 @@ export default function AuthScreen({ signin }: AuthScreenProps) {
                   type={field.type}
                   placeholder={field.placeholder}
                   autoComplete={field.autoComplete}
+                  value={form[field.id]}
+                  onChange={handleChange}
+                  aria-invalid={Boolean(fieldErrors[field.id])}
+                  className={fieldErrors[field.id] ? styles.inputError : undefined}
                 />
+                {fieldErrors[field.id] ? (
+                  <p className={styles.fieldError}>{fieldErrors[field.id]}</p>
+                ) : null}
               </label>
             ))}
 
@@ -217,8 +400,16 @@ export default function AuthScreen({ signin }: AuthScreenProps) {
               </a>
             </div>
 
-            <button type="submit" className={styles.primaryButton}>
-              {content.primaryAction}
+            <button
+              type="submit"
+              className={styles.primaryButton}
+              disabled={isSubmitting}
+            >
+              {isSubmitting
+                ? signin
+                  ? "Signing you in..."
+                  : "Creating your account..."
+                : content.primaryAction}
             </button>
           </form>
 
