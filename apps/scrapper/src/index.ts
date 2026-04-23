@@ -23,7 +23,7 @@ async function main() {
       const rawData = JSON.parse(line);
 
       const formattedProblem = {
-        title: rawData.title || rawData.id || `Problem ${rawData.task_id}`, 
+        title: rawData.title || rawData.id || rawData.task_id, 
         questionId: String(rawData.question_id),
         difficulty: rawData.difficulty || 'Medium',
         problemDescription: rawData.problem_description || rawData.content || '',
