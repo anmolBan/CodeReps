@@ -55,7 +55,7 @@ export const authOptions: AuthOptions = {
         }
 
         try {
-          const user = await prisma.users.findUnique({
+          const user = await prisma.user.findUnique({
             where: {
               email: parsedBody.data.email,
             },

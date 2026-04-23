@@ -5,7 +5,7 @@ export async function handleSignup({email, password, name}: {email: string, pass
     // const body = { email, password, name };
 
     try{
-        const existingUser = await prisma.users.findUnique({
+        const existingUser = await prisma.user.findUnique({
             where: {
                 email
             }
@@ -17,7 +17,7 @@ export async function handleSignup({email, password, name}: {email: string, pass
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        await prisma.users.create({
+        await prisma.user.create({
             data: {
                 email,
                 name,

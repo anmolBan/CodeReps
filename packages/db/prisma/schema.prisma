@@ -11,7 +11,7 @@ datasource db {
   provider = "postgresql"
 }
 
-model Users {
+model User {
   id             String   @id @default(cuid())
   email          String   @unique
   name           String?
@@ -19,9 +19,29 @@ model Users {
   createdAt      DateTime @default(now())
 }
 
-model Problems {
-  id          String   @id @default(cuid())
-  title       String
-  description String
-  createdAt   DateTime @default(now())
+model Problem {
+  id                  String    @id @default(cuid())
+  title               String
+  questionId          String    @unique
+  difficulty          String
+  problemDescription  String
+  starterCode         Json
+  testCases           Json
+  createdAt           DateTime  @default(now())
+  tags                ProblemTag[]
+}
+
+model Tag {
+  id          String @id @default(cuid())
+  name        String @unique
+  problems    ProblemTag[]
+}
+
+model ProblemTag {
+  problemId String
+  tagId     String
+  problem   Problem @relation(fields: [problemId], references: [id])
+  tag       Tag     @relation(fields: [tagId], references: [id])
+
+  @@id([problemId, tagId]) // composite primary key
 }
