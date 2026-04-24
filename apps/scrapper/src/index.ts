@@ -42,6 +42,7 @@ async function main() {
           problemDescription: formattedProblem.problemDescription,
           starterCode: formattedProblem.starterCode,
           testCases: formattedProblem.testCases,
+          examples: [],
           
           // The new explicit many-to-many insertion logic
           tags: {

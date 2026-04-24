@@ -21,10 +21,11 @@ model User {
 
 model Problem {
   id                  String    @id @default(cuid())
-  title               String
+  title               String    @unique
   questionId          String    @unique
   difficulty          String
   problemDescription  String
+  examples            Json[]
   starterCode         Json
   testCases           Json
   createdAt           DateTime  @default(now())
