@@ -2,6 +2,7 @@ import { get } from "http";
 import styles from "./page.module.css";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../lib/authOptions";
+import { redirect } from "next/navigation";
 
 const proofPoints = [
   "Daily challenges",
@@ -57,7 +58,10 @@ const timeline = [
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
-  console.log(session);
+  if(!session){
+    console.log('No session found, redirecting to signin page');
+    redirect("/signin");
+  }
   return (
     <main className={styles.page}>
       <section className={styles.hero}>

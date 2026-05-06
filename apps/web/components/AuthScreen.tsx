@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import axios from "axios";
 import { userSignInSchema, userSignUpSchema } from "@repo/zod-types";
-import styles from "../app/(auth)/auth.module.css";
+import styles from "../app/(pages)/(auth)/auth.module.css";
 
 type AuthScreenProps = {
   signin: boolean;

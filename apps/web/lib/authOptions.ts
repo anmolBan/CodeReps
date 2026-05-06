@@ -30,6 +30,8 @@ export const authOptions: AuthOptions = {
 
   session: {
     strategy: "jwt",
+    "maxAge": 7 * 24 * 60 * 60,
+    "updateAge": 60 * 60,
   },
 
   providers: [
@@ -44,7 +46,6 @@ export const authOptions: AuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        // console.log("Anmol Bansal");
         if (!credentials?.email || !credentials.password) {
           return null;
         }
@@ -84,7 +85,7 @@ export const authOptions: AuthOptions = {
           return null;
         }
       },
-    }),
+    })
   ],
 
   callbacks: {
