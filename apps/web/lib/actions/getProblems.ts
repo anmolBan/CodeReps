@@ -2,12 +2,40 @@
 
 import prisma from "@repo/db";
 
-export default async function getProblems(limit = 20, offset = 0) {
+export default async function getProblems(
+    limit = 20,
+    offset = 0,
+    search = "",
+    difficulty = "all"
+) {
     try{
         const safeLimit = Math.max(1, Math.min(limit, 100));
         const safeOffset = Math.max(0, offset);
+        const trimmedSearch = search.trim();
+
+        const where: Record<string, any> = {};
+
+        if (trimmedSearch) {
+            where.OR = [
+                { title: { contains: trimmedSearch, mode: "insensitive" } },
+                {
+                    tags: {
+                        some: {
+                            tag: {
+                                name: { contains: trimmedSearch, mode: "insensitive" },
+                            },
+                        },
+                    },
+                },
+            ];
+        }
+
+        if (difficulty && difficulty !== "all") {
+            where.difficulty = { equals: difficulty, mode: "insensitive" };
+        }
 
         const response = await prisma.problem.findMany({
+            where,
             skip: safeOffset,
             take: safeLimit,
             orderBy: {

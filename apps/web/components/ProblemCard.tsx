@@ -27,7 +27,8 @@ export default function ProblemCard({
 
             {/* Title + tags */}
             <div className={styles.problemInfo}>
-                <span className={styles.title}>{title}</span>
+                {/* starting letter of each word capitalized, dashes replaced with spaces */}
+                <span className={styles.title}>{title.split("-").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}</span>
                 {tags && tags.length > 0 && (
                     <div className={styles.tagsList}>
                         {tags.slice(0, 5).map((tag) => (
