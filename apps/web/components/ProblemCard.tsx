@@ -1,19 +1,28 @@
+"use client";
+import { useRouter } from "next/navigation";
 import styles from "./ProblemCard.module.css";
 
 export default function ProblemCard({
+    problemId,
     title,
     difficulty,
     tags,
     solved,
     index,
 }: {
+    problemId: string;
     title: string;
     difficulty: string;
     tags: string[];
     solved: boolean;
     index?: number;
 }) {
+    const router = useRouter();
     const diffKey = difficulty?.toLowerCase() as "easy" | "medium" | "hard";
+
+    function solveOnClickHandler(){
+        router.push(`/problem/${title}`);
+    }
 
     return (
         <div className={`${styles.card} ${styles[`accent_${diffKey}`] ?? ""} ${solved ? styles.solved : ""}`}>
@@ -53,7 +62,7 @@ export default function ProblemCard({
                         </svg>
                     </span>
                 ) : (
-                    <button className={styles.solveButton}>
+                    <button onClick={solveOnClickHandler} className={styles.solveButton}>
                         <span>Solve</span>
                         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                             <path d="M2 7h10M8 3l4 4-4 4" />

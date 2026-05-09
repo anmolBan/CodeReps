@@ -10,7 +10,7 @@ type Difficulty = "All" | "Easy" | "Medium" | "Hard";
 
 const PAGE_SIZE = 20;
 
-export default function ProblemsPage() {
+export default function ProblemSetPage() {
     const [initialLoading, setInitialLoading] = useState(true);
     const [isResetting, setIsResetting] = useState(false);
     const [isFetchingMore, setIsFetchingMore] = useState(false);
@@ -196,6 +196,7 @@ export default function ProblemsPage() {
                             {problems.map((problem, i) => (
                                 <ProblemCard
                                     key={problem.id}
+                                    problemId={problem.id}
                                     index={i}
                                     title={problem.title}
                                     difficulty={problem.difficulty}
