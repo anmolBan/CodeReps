@@ -54,6 +54,7 @@ export default async function getProblemDetails(title: string){
                 input: inputMatch?.[1]?.trim() ?? "",
                 output: outputMatch?.[1]?.trim() ?? "",
                 explanation: explanationMatch?.[1]?.trim() ?? undefined,
+                images: Array.isArray(ex.images) ? (ex.images as string[]).filter(Boolean) : [],
             };
         });
 

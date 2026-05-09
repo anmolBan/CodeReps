@@ -8,6 +8,7 @@ type Example = {
     input: string;
     output: string;
     explanation?: string;
+    images?: string[];
 };
 
 type Problem = {
@@ -264,6 +265,29 @@ export default function ProblemClient({ problem }: { problem: Problem }) {
                                                         <div className={styles.exampleRow}>
                                                             <span className={styles.exampleLabel}>Explanation</span>
                                                             <p className={styles.exampleExplanation}>{ex.explanation}</p>
+                                                        </div>
+                                                    )}
+                                                    {ex.images && ex.images.length > 0 && (
+                                                        <div className={styles.exampleRow}>
+                                                            <span className={styles.exampleLabel}>Visual</span>
+                                                            <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                                                                {ex.images.map((src, j) => (
+                                                                    <img
+                                                                        key={j}
+                                                                        src={src}
+                                                                        alt={`Example ${i + 1} illustration ${j + 1}`}
+                                                                        style={{
+                                                                            maxWidth: 220,
+                                                                            maxHeight: 160,
+                                                                            objectFit: "contain",
+                                                                            borderRadius: 8,
+                                                                            border: "1px solid rgba(255,255,255,0.09)",
+                                                                            background: "rgba(255,255,255,0.04)",
+                                                                            padding: 6,
+                                                                        }}
+                                                                    />
+                                                                ))}
+                                                            </div>
                                                         </div>
                                                     )}
                                                 </div>
