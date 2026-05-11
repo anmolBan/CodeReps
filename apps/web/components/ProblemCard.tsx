@@ -5,6 +5,7 @@ import styles from "./ProblemCard.module.css";
 export default function ProblemCard({
     problemId,
     title,
+    slug,
     difficulty,
     tags,
     solved,
@@ -12,6 +13,7 @@ export default function ProblemCard({
 }: {
     problemId: string;
     title: string;
+    slug: string;
     difficulty: string;
     tags: string[];
     solved: boolean;
@@ -21,7 +23,7 @@ export default function ProblemCard({
     const diffKey = difficulty?.toLowerCase() as "easy" | "medium" | "hard";
 
     function solveOnClickHandler(){
-        router.push(`/problem/${title}`);
+        router.push(`/problem/${slug}`);
     }
 
     return (

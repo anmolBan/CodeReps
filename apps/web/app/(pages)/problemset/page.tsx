@@ -199,6 +199,7 @@ export default function ProblemSetPage() {
                                     problemId={problem.id}
                                     index={i}
                                     title={problem.title}
+                                    slug={problem.slug}
                                     difficulty={problem.difficulty}
                                     tags={problem.tags}
                                     solved={problem.solved}

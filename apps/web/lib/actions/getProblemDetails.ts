@@ -2,12 +2,11 @@
 
 import prisma from "@repo/db";
 
-export default async function getProblemDetails(title: string){
-    console.log("Fetching details for problem:", title);
+export default async function getProblemDetails(slug: string){
     try{
         const problem = await prisma?.problem.findUnique({
             where: {
-                title
+                slug
             },
             include: {
                 tags: {
@@ -34,15 +33,9 @@ export default async function getProblemDetails(title: string){
         const exampleSplit = rawDesc.split(/\n?\s*Example\s+\d+\s*:/i);
         const descriptionOnly = (exampleSplit[0] ?? rawDesc).trim();
 
-        // Extract constraints block
-        const constraintsMatch = rawDesc.match(/Constraints:\s*\n([\s\S]*?)(?=\n\s*Follow[- ]?[Uu]p[^\w]|$)/i);
-        const constraints = constraintsMatch?.[1]
-            ? constraintsMatch[1].trim().split("\n").map(l => l.trim()).filter(Boolean)
-            : [];
-
-        // Extract follow-up block
-        const followUpMatch = rawDesc.match(/Follow[- ]?[Uu]p[^\w]*:?\s*([\s\S]*?)$/i);
-        const followUp = followUpMatch?.[1]?.trim() ?? "";
+        // Use schema fields directly
+        const constraints: string[] = problem.constraints ?? [];
+        const followUp: string[] = problem.followUp ?? [];
         // ──────────────────────────────────────────────────────────────
 
         const parsedExamples = (problem.examples ?? []).map((ex: any) => {
@@ -54,21 +47,22 @@ export default async function getProblemDetails(title: string){
                 input: inputMatch?.[1]?.trim() ?? "",
                 output: outputMatch?.[1]?.trim() ?? "",
                 explanation: explanationMatch?.[1]?.trim() ?? undefined,
-                images: Array.isArray(ex.images) ? (ex.images as string[]).filter(Boolean) : [],
+                images: ex.images
             };
         });
 
         const response = {
             id: problem.id,
             title: problem.title,
+            slug: problem.slug,
             difficulty: (problem.difficulty ?? "easy").toLowerCase(),
             solved: false,
             tags: problem.tags.map((problemTag) => problemTag.tag.name),
             starterCode: problem.starterCode,
             description: descriptionOnly,
             constraints,
-            followUp,
-            questionId: problem.questionId,
+            followUp: followUp.join("\n"),
+            questionId: problem.problemId,
             examples: parsedExamples,
         }
         return {

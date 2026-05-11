@@ -53,6 +53,7 @@ export default async function getProblems(
         const problems = response.map((problem) => ({
             id: problem.id,
             title: problem.title,
+            slug: problem.slug,
             difficulty: (problem.difficulty ?? "easy").toLowerCase(),
             acceptance: 0,
             likes: 0,

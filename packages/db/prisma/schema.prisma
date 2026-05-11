@@ -21,13 +21,17 @@ model User {
 
 model Problem {
   id                  String    @id @default(cuid())
-  title               String    @unique
-  questionId          String    @unique
+  title               String
+  slug                String    @unique
+  problemId           String    @unique
   difficulty          String
   problemDescription  String
   examples            Json[]
   starterCode         Json
-  testCases           Json
+  testCases           Json[]
+  constraints         String[]
+  followUp            String[]
+  hints               String[]
   createdAt           DateTime  @default(now())
   tags                ProblemTag[]
 }

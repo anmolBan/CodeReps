@@ -267,23 +267,24 @@ export default function ProblemClient({ problem }: { problem: Problem }) {
                                                             <p className={styles.exampleExplanation}>{ex.explanation}</p>
                                                         </div>
                                                     )}
-                                                    {ex.images && ex.images.length > 0 && (
+                                                    {Array.isArray(ex.images) && ex.images.length > 0 && ex.images.some(s => typeof s === "string" && s.trim().length > 0) && (
                                                         <div className={styles.exampleRow}>
                                                             <span className={styles.exampleLabel}>Visual</span>
-                                                            <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                                                            <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
                                                                 {ex.images.map((src, j) => (
                                                                     <img
                                                                         key={j}
                                                                         src={src}
                                                                         alt={`Example ${i + 1} illustration ${j + 1}`}
                                                                         style={{
-                                                                            maxWidth: 220,
-                                                                            maxHeight: 160,
+                                                                            width: "100%",
+                                                                            maxWidth: 520,
+                                                                            maxHeight: 400,
                                                                             objectFit: "contain",
-                                                                            borderRadius: 8,
+                                                                            borderRadius: 10,
                                                                             border: "1px solid rgba(255,255,255,0.09)",
                                                                             background: "rgba(255,255,255,0.04)",
-                                                                            padding: 6,
+                                                                            padding: 8,
                                                                         }}
                                                                     />
                                                                 ))}
