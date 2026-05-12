@@ -3,6 +3,11 @@
   "module": "index.ts",
   "type": "module",
   "private": true,
+  "scripts": {
+    "build": "tsc -b",
+    "dev": "tsx src/index3.ts",
+    "start": "bun run build && bun run dev"
+  },
   "devDependencies": {
     "@types/bun": "latest",
     "@repo/db": "*"

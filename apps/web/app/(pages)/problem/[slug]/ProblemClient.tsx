@@ -1,6 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import type { Monaco } from "@monaco-editor/react";
+import type { editor } from "monaco-editor";
+import dynamic from "next/dynamic";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import styles from "./problem.module.css";
 
@@ -44,70 +47,108 @@ const LANG_DOT_COLORS: Record<Lang, string> = {
     cpp: "#a855f7",
 };
 
-/* ── Very simple tokenizer for keyword / string / comment colouring ── */
-function tokenizeLine(line: string): React.ReactNode[] {
-    const keywords = /\b(function|const|let|var|return|if|else|for|while|class|import|export|default|new|this|typeof|instanceof|null|undefined|true|false|async|await|from|of|in|throw|try|catch|finally|void|break|continue|switch|case|def|self|pass|lambda|yield|None|True|False|int|string|boolean|public|private|static|void|extends|implements)\b/g;
-    const tokens: React.ReactNode[] = [];
-    let remaining = line;
-    let key = 0;
+const MONACO_LANGUAGE_BY_LANG: Record<Lang, string> = {
+    javascript: "javascript",
+    python: "python",
+    typescript: "typescript",
+    java: "java",
+    cpp: "cpp",
+};
 
-    // Single line comments
-    const commentIdx = remaining.search(/(\/\/|#)/);
-    let commentSuffix = "";
-    if (commentIdx !== -1) {
-        commentSuffix = remaining.slice(commentIdx);
-        remaining = remaining.slice(0, commentIdx);
-    }
+const LANG_MODEL_PATHS: Record<Lang, string> = {
+    javascript: "solution.js",
+    python: "solution.py",
+    typescript: "solution.ts",
+    java: "Solution.java",
+    cpp: "solution.cpp",
+};
 
-    // Strings
-    const parts = remaining.split(/(["'`][^"'`]*["'`])/g);
-    for (const part of parts) {
-        if (/^["'`]/.test(part)) {
-            tokens.push(<span key={key++} className={styles.strColor}>{part}</span>);
-        } else {
-            // Keywords in non-string parts
-            const kParts = part.split(keywords);
-            for (let i = 0; i < kParts.length; i++) {
-                const kp = kParts[i];
-                if (!kp) continue;
-                if (keywords.test(kp)) {
-                    tokens.push(<span key={key++} className={styles.kwColor}>{kp}</span>);
-                } else {
-                    // Numbers
-                    const nParts = kp.split(/(\b\d+\.?\d*\b)/g);
-                    for (let j = 0; j < nParts.length; j++) {
-                        const np = nParts[j];
-                        if (!np) continue;
-                        if (/^\d/.test(np)) {
-                            tokens.push(<span key={key++} className={styles.numColor}>{np}</span>);
-                        } else {
-                            tokens.push(<span key={key++}>{np}</span>);
-                        }
-                    }
-                }
-            }
-            keywords.lastIndex = 0;
-        }
-    }
+const MONACO_OPTIONS: editor.IStandaloneEditorConstructionOptions = {
+    automaticLayout: true,
+    fontFamily: "var(--font-geist-mono), 'Fira Code', monospace",
+    fontSize: 14,
+    fontLigatures: true,
+    lineHeight: 28,
+    minimap: { enabled: false },
+    padding: { top: 18, bottom: 24 },
+    quickSuggestions: true,
+    roundedSelection: false,
+    scrollBeyondLastLine: false,
+    smoothScrolling: true,
+    tabSize: 4,
+    wordWrap: "off",
+    scrollbar: {
+        verticalScrollbarSize: 6,
+        horizontalScrollbarSize: 6,
+    },
+};
 
-    if (commentSuffix) {
-        tokens.push(<span key={key++} className={styles.cmtColor}>{commentSuffix}</span>);
-    }
+const MonacoEditor = dynamic(
+    () => import("@monaco-editor/react").then((mod) => mod.default),
+    {
+        ssr: false,
+        loading: () => <div className={styles.editorLoading}>Loading editor...</div>,
+    },
+);
 
-    return tokens;
+function getStarterCodeForLang(problem: Problem, lang: Lang) {
+    if (!problem.starterCode) return "// No starter code available";
+    if (typeof problem.starterCode === "string") return problem.starterCode;
+    return problem.starterCode[lang] ?? "// No starter code for this language";
 }
 
-function CodeView({ code }: { code: string }) {
-    const lines = code.split("\n");
+function handleEditorWillMount(monaco: Monaco) {
+    monaco.editor.defineTheme("code-reps-night", {
+        base: "vs-dark",
+        inherit: true,
+        rules: [
+            { token: "comment", foreground: "8D869F", fontStyle: "italic" },
+            { token: "keyword", foreground: "C084FC" },
+            { token: "number", foreground: "FB923C" },
+            { token: "string", foreground: "86EFAC" },
+            { token: "type", foreground: "67E8F9" },
+        ],
+        colors: {
+            "editor.background": "#080612",
+            "editor.foreground": "#F7F3EA",
+            "editorCursor.foreground": "#F7F3EA",
+            "editor.lineHighlightBackground": "#151021",
+            "editor.selectionBackground": "#3B82F64D",
+            "editor.inactiveSelectionBackground": "#3B82F633",
+            "editorLineNumber.foreground": "#5B556B",
+            "editorLineNumber.activeForeground": "#F3C98B",
+            "editorGutter.background": "#080612",
+            "editorIndentGuide.background1": "#FFFFFF14",
+            "editorIndentGuide.activeBackground1": "#FFFFFF26",
+        },
+    });
+}
+
+function CodeView({
+    code,
+    editorPath,
+    language,
+    onChange,
+}: {
+    code: string;
+    editorPath: string;
+    language: string;
+    onChange: (nextCode: string) => void;
+}) {
     return (
-        <pre className={styles.codeBlock}>
-            {lines.map((line, i) => (
-                <div key={i}>
-                    <span className={styles.lineNumber}>{i + 1}</span>
-                    {tokenizeLine(line)}
-                </div>
-            ))}
-        </pre>
+        <div className={styles.monacoShell}>
+            <MonacoEditor
+                beforeMount={handleEditorWillMount}
+                height="100%"
+                language={language}
+                loading={<div className={styles.editorLoading}>Loading editor...</div>}
+                onChange={(value) => onChange(value ?? "")}
+                options={MONACO_OPTIONS}
+                path={editorPath}
+                theme="code-reps-night"
+                value={code}
+            />
+        </div>
     );
 }
 
@@ -125,6 +166,7 @@ export default function ProblemClient({ problem }: { problem: Problem }) {
     const [activeLang, setActiveLang] = useState<Lang>("javascript");
     const [outputOpen, setOutputOpen] = useState(false);
     const [langMenuOpen, setLangMenuOpen] = useState(false);
+    const [draftCodeByLang, setDraftCodeByLang] = useState<Partial<Record<Lang, string>>>({});
 
     const availableLangs = useMemo(() => {
         if (problem.starterCode && typeof problem.starterCode === "object") {
@@ -133,12 +175,14 @@ export default function ProblemClient({ problem }: { problem: Problem }) {
         return ["javascript"] as Lang[];
     }, [problem.starterCode]);
 
-    const currentCode = useMemo(() => {
-        if (!problem.starterCode) return "// No starter code available";
-        if (typeof problem.starterCode === "string") return problem.starterCode;
-        const code = (problem.starterCode as Record<string, string>)[activeLang];
-        return code ?? "// No starter code for this language";
-    }, [problem.starterCode, activeLang]);
+    const starterCodeForActiveLang = useMemo(
+        () => getStarterCodeForLang(problem, activeLang),
+        [problem, activeLang],
+    );
+    const activeMonacoLanguage = MONACO_LANGUAGE_BY_LANG[activeLang];
+    const activeEditorPath = `${problem.id}/${LANG_MODEL_PATHS[activeLang]}`;
+
+    const currentCode = draftCodeByLang[activeLang] ?? starterCodeForActiveLang;
 
     const diffKey = problem.difficulty as "easy" | "medium" | "hard";
     const displayTitle = formatTitle(problem.title);
@@ -147,6 +191,15 @@ export default function ProblemClient({ problem }: { problem: Problem }) {
         if (!problem.examples) return [];
         return problem.examples;
     }, [problem.examples]);
+
+    useEffect(() => {
+        if (availableLangs.includes(activeLang)) return;
+        setActiveLang(availableLangs[0] ?? "javascript");
+    }, [activeLang, availableLangs]);
+
+    useEffect(() => {
+        setDraftCodeByLang({});
+    }, [problem.id]);
 
     return (
         <div className={styles.shell}>
@@ -394,7 +447,16 @@ export default function ProblemClient({ problem }: { problem: Problem }) {
                         </div>
 
                         <div className={styles.editorTopRight}>
-                            <button className={styles.iconBtn} title="Reset code">
+                            <button
+                                className={styles.iconBtn}
+                                title="Reset code"
+                                onClick={() =>
+                                    setDraftCodeByLang((prev) => ({
+                                        ...prev,
+                                        [activeLang]: starterCodeForActiveLang,
+                                    }))
+                                }
+                            >
                                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M1 7a6 6 0 1 0 1.1-3.4" />
                                     <path d="M1 2v3h3" />
@@ -409,7 +471,17 @@ export default function ProblemClient({ problem }: { problem: Problem }) {
                     </div>
 
                     <div className={styles.codeArea}>
-                        <CodeView code={currentCode} />
+                        <CodeView
+                            code={currentCode}
+                            editorPath={activeEditorPath}
+                            language={activeMonacoLanguage}
+                            onChange={(nextCode) =>
+                                setDraftCodeByLang((prev) => ({
+                                    ...prev,
+                                    [activeLang]: nextCode,
+                                }))
+                            }
+                        />
                     </div>
 
                     {/* Output bar */}

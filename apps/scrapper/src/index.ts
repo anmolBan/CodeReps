@@ -9,7 +9,7 @@ async function main() {
   console.log('Starting dataset ingestion...');
 
   // Ensure this points to your downloaded train.jsonl file
-  const fileStream = fs.createReadStream('leetcode_dataset2.jsonl');
+  const fileStream = fs.createReadStream('leetcode_dataset.jsonl');
 
   const rl = readline.createInterface({
     input: fileStream,
@@ -19,10 +19,11 @@ async function main() {
   let count = 0;
 
   for await (const line of rl) {
+    let formattedProblem: any = null;
     try {
       const rawData = JSON.parse(line);
 
-      const formattedProblem = {
+      formattedProblem = {
         title: rawData.title || rawData.id || rawData.task_id, 
         questionId: String(rawData.question_id),
         difficulty: rawData.difficulty || 'Medium',
@@ -32,30 +33,13 @@ async function main() {
         tags: Array.isArray(rawData.tags) ? rawData.tags : [],
       };
 
-      await prisma.problem.upsert({
-        where: { questionId: formattedProblem.questionId },
-        update: {}, // Skip if already in database
-        create: {
-          title: formattedProblem.title,
-          questionId: formattedProblem.questionId,
-          difficulty: formattedProblem.difficulty,
-          problemDescription: formattedProblem.problemDescription,
-          starterCode: formattedProblem.starterCode,
-          testCases: formattedProblem.testCases,
-          examples: [],
-          
-          // The new explicit many-to-many insertion logic
-          tags: {
-            create: formattedProblem.tags.map((tagName: string) => ({
-              tag: {
-                connectOrCreate: {
-                  where: { name: tagName },
-                  create: { name: tagName },
-                },
-              },
-            })),
-          },
-        },
+      await prisma.problem.update({
+        where: {
+          problemId: formattedProblem.questionId
+        }, 
+        data: {
+          testCases: formattedProblem.testCases
+        }
       });
 
       console.log(`✅ Ingested problem: ${formattedProblem.title}`);
@@ -63,7 +47,7 @@ async function main() {
       if (count % 100 === 0) console.log(`Ingested ${count} problems...`);
 
     } catch (error) {
-      console.error('Error parsing line or inserting to DB:', error);
+      console.error("Failed to process problem:", formattedProblem?.title);
     }
   }
 
