@@ -1,5 +1,6 @@
 import prisma from "@repo/db";
 import fs from 'fs';
+import { buildJudgeMetadata } from "./judgeMetadata";
 
 async function main(){
     const fileStream = fs.readFileSync('merged_problems.json', 'utf-8');
@@ -37,6 +38,7 @@ async function main(){
             problemDescription: question.description.split("Example")[0].trim(),
             examples,
             starterCode: question.code_snippets,
+            judgeMetadata: buildJudgeMetadata(question.code_snippets),
             testCases: [],
             constraints: question.constraints,
             followUp: question.follow_ups,
@@ -48,7 +50,19 @@ async function main(){
             where: {
                 problemId: formattedProblem.problemId
             },
-            update: {},
+            update: {
+                title: formattedProblem.title,
+                slug: formattedProblem.slug,
+                difficulty: formattedProblem.difficulty,
+                problemDescription: formattedProblem.problemDescription,
+                examples: formattedProblem.examples,
+                starterCode: formattedProblem.starterCode,
+                judgeFunctionName: formattedProblem.judgeMetadata.canonicalFunctionName,
+                judgeMetadata: formattedProblem.judgeMetadata,
+                constraints: formattedProblem.constraints,
+                followUp: formattedProblem.followUp,
+                hints: formattedProblem.hints,
+            },
             create: {
                 title: formattedProblem.title,
                 slug: formattedProblem.slug,
@@ -57,6 +71,8 @@ async function main(){
                 problemDescription: formattedProblem.problemDescription,
                 examples: formattedProblem.examples,
                 starterCode: formattedProblem.starterCode,
+                judgeFunctionName: formattedProblem.judgeMetadata.canonicalFunctionName,
+                judgeMetadata: formattedProblem.judgeMetadata,
                 testCases: formattedProblem.testCases,
                 constraints: formattedProblem.constraints,
                 followUp: formattedProblem.followUp,

@@ -63,6 +63,11 @@ const LANG_MODEL_PATHS: Record<Lang, string> = {
     cpp: "solution.cpp",
 };
 
+type PersistedEditorState = {
+    activeLang?: Lang;
+    draftCodeByLang?: Partial<Record<Lang, string>>;
+};
+
 const MONACO_OPTIONS: editor.IStandaloneEditorConstructionOptions = {
     automaticLayout: true,
     fontFamily: "var(--font-geist-mono), 'Fira Code', monospace",
@@ -95,6 +100,24 @@ function getStarterCodeForLang(problem: Problem, lang: Lang) {
     if (!problem.starterCode) return "// No starter code available";
     if (typeof problem.starterCode === "string") return problem.starterCode;
     return problem.starterCode[lang] ?? "// No starter code for this language";
+}
+
+function isLang(value: unknown): value is Lang {
+    return typeof value === "string" && LANGUAGES.includes(value as Lang);
+}
+
+function sanitizeDraftCodeByLang(value: unknown) {
+    if (!value || typeof value !== "object") return {};
+
+    const nextDrafts: Partial<Record<Lang, string>> = {};
+    for (const lang of LANGUAGES) {
+        const draft = (value as Partial<Record<Lang, unknown>>)[lang];
+        if (typeof draft === "string") {
+            nextDrafts[lang] = draft;
+        }
+    }
+
+    return nextDrafts;
 }
 
 function handleEditorWillMount(monaco: Monaco) {
@@ -181,6 +204,8 @@ export default function ProblemClient({ problem }: { problem: Problem }) {
     );
     const activeMonacoLanguage = MONACO_LANGUAGE_BY_LANG[activeLang];
     const activeEditorPath = `${problem.id}/${LANG_MODEL_PATHS[activeLang]}`;
+    const editorStorageKey = `problem-editor:${problem.id}`;
+    const [hydratedStorageKey, setHydratedStorageKey] = useState<string | null>(null);
 
     const currentCode = draftCodeByLang[activeLang] ?? starterCodeForActiveLang;
 
@@ -198,8 +223,46 @@ export default function ProblemClient({ problem }: { problem: Problem }) {
     }, [activeLang, availableLangs]);
 
     useEffect(() => {
-        setDraftCodeByLang({});
-    }, [problem.id]);
+        if (typeof window === "undefined") return;
+
+        const fallbackLang = availableLangs[0] ?? "javascript";
+
+        try {
+            const rawState = window.localStorage.getItem(editorStorageKey);
+            if (!rawState) {
+                setActiveLang(fallbackLang);
+                setDraftCodeByLang({});
+                setHydratedStorageKey(editorStorageKey);
+                return;
+            }
+
+            const parsedState = JSON.parse(rawState) as PersistedEditorState;
+            const nextDrafts = sanitizeDraftCodeByLang(parsedState.draftCodeByLang);
+            const nextLang = isLang(parsedState.activeLang) && availableLangs.includes(parsedState.activeLang)
+                ? parsedState.activeLang
+                : fallbackLang;
+
+            setDraftCodeByLang(nextDrafts);
+            setActiveLang(nextLang);
+        } catch {
+            setActiveLang(fallbackLang);
+            setDraftCodeByLang({});
+        }
+
+        setHydratedStorageKey(editorStorageKey);
+    }, [availableLangs, editorStorageKey]);
+
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        if (hydratedStorageKey !== editorStorageKey) return;
+
+        const nextState: PersistedEditorState = {
+            activeLang,
+            draftCodeByLang,
+        };
+
+        window.localStorage.setItem(editorStorageKey, JSON.stringify(nextState));
+    }, [activeLang, draftCodeByLang, editorStorageKey, hydratedStorageKey]);
 
     return (
         <div className={styles.shell}>

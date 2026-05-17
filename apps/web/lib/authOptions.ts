@@ -66,6 +66,8 @@ export const authOptions: AuthOptions = {
             return null;
           }
 
+          console.log(user);
+
           const isPasswordValid = await bcrypt.compare(
             parsedBody.data.password,
             user.hashedPassword,

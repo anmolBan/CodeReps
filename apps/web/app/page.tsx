@@ -58,10 +58,6 @@ const timeline = [
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
-  if(!session){
-    console.log('No session found, redirecting to signin page');
-    redirect("/signin");
-  }
   return (
     <main className={styles.page}>
       <section className={styles.hero}>

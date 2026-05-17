@@ -28,6 +28,8 @@ model Problem {
   problemDescription  String
   examples            Json[]
   starterCode         Json
+  judgeFunctionName   String?
+  judgeMetadata       Json?
   testCases           Json[]
   constraints         String[]
   followUp            String[]
